@@ -1,0 +1,11 @@
+[general]
+# Where the writing will occur from the dd command:
+folderLocation  = /home/user
+# Specify either zero or random to change the type of data generated
+dataType        = random
+# Run the Throughput test (single very large block written)
+runThroughput   = False
+# Run the Latency test (multiple smaller blocks written)
+runLatency      = True
+# Print information to the terminal while the test is running.
+printResults    = True
