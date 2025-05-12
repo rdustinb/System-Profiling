@@ -12,9 +12,23 @@ runThroughput   = config.getboolean('general', 'runThroughput')
 runLatency      = config.getboolean('general', 'runLatency')
 printResults    = config.getboolean('general', 'printResults')
 
+# macOS dd output:
+#       1+0 records in
+#       1+0 records out
+#       134217728 bytes transferred in 0.303301 secs (442523196 bytes/sec)
+# The script just uses this part:
+#       (442523196 bytes/sec)
+
+# Debian dd output:
+#       1+0 records in
+#       1+0 records out
+#       134217728 bytes (134 MB, 128 MiB) copied, 0.407142 s, 330 MB/s
+# The script just uses this part:
+#       330 MB/s
+
 # Throughput (large block size, only one)
 throughputBlockList = [ "262144", "524288", "1048576", "2097152", "4194304", "8388608", "16777216", "33554432", "67108864", "134217728", "268435456", "536870912", "1073741824" ]
-#throughputBlockList = [ "64M" ]
+#throughputBlockList = [ "16777216" ]
 throughputCount = "1"
 
 throughputResults = dict()
@@ -31,10 +45,17 @@ if runThroughput:
                 capture_output=True,
                 text=True
                 )
+        # Parse for the bandwidth unit
+        resultUnits = result.stderr.split()[-1].strip(")")
         # Parse for the bandwidth
         rawResult = result.stderr.split()[-2].strip("(")
+        # Determine if we need to change from bytes to megabytes
+        if resultUnits.find("bytes") != -1:
+          thisDivisor = 1024*1024
+        else:
+          thisDivisor = 1
         # Format the data point
-        throughputResults[thisBlock] = "{:.3f}".format(float(rawResult)/1024/1024)
+        throughputResults[thisBlock] = int(float(rawResult)/thisDivisor)
         # Print the results
         if printResults:
             print(f"{throughputCount} count of {thisBlock} is {throughputResults[thisBlock]} MBps")
@@ -66,10 +87,17 @@ if runLatency:
                 capture_output=True,
                 text=True
                 )
+        # Parse for the bandwidth unit
+        resultUnits = result.stderr.split()[-1].strip(")")
         # Parse for the bandwidth
         rawResult = result.stderr.split()[-2].strip("(")
+        # Determine if we need to change from bytes to megabytes
+        if resultUnits.find("bytes") != -1:
+          thisDivisor = 1024*1024
+        else:
+          thisDivisor = 1
         # Format the data point
-        latencyResults[latencyCount] = "{:.3f}".format(float(rawResult)/1024/1024)
+        latencyResults[latencyCount] = int(float(rawResult)/thisDivisor)
         # Print the results
         if printResults:
             print(f"{latencyCount} count of {latencyBlock} is {latencyResults[latencyCount]} MBps")
