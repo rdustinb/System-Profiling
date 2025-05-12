@@ -55,7 +55,7 @@ if runThroughput:
         else:
           thisDivisor = 1
         # Format the data point
-        throughputResults[thisBlock] = int(int(rawResult)/thisDivisor)
+        throughputResults[thisBlock] = int(float(rawResult)/thisDivisor)
         # Print the results
         if printResults:
             print(f"{throughputCount} count of {thisBlock} is {throughputResults[thisBlock]} MBps")
@@ -97,7 +97,7 @@ if runLatency:
         else:
           thisDivisor = 1
         # Format the data point
-        latencyResults[latencyCount] = int(int(rawResult)/thisDivisor)
+        latencyResults[latencyCount] = int(float(rawResult)/thisDivisor)
         # Print the results
         if printResults:
             print(f"{latencyCount} count of {latencyBlock} is {latencyResults[latencyCount]} MBps")
