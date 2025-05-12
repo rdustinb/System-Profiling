@@ -27,8 +27,8 @@ printResults    = config.getboolean('general', 'printResults')
 #       330 MB/s
 
 # Throughput (large block size, only one)
-#throughputBlockList = [ "262144", "524288", "1048576", "2097152", "4194304", "8388608", "16777216", "33554432", "67108864", "134217728", "268435456", "536870912", "1073741824" ]
-throughputBlockList = [ "16777216" ]
+throughputBlockList = [ "262144", "524288", "1048576", "2097152", "4194304", "8388608", "16777216", "33554432", "67108864", "134217728", "268435456", "536870912", "1073741824" ]
+#throughputBlockList = [ "16777216" ]
 throughputCount = "1"
 
 throughputResults = dict()
