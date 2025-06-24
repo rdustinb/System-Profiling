@@ -1,7 +1,0 @@
-#!/bin/bash
-
-while true
-do
-  python3 test_internet.py home
-  sleep 120
-done
