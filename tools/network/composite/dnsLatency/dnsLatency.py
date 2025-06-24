@@ -32,59 +32,6 @@ if dependency_fail is True:
   sys.exit(-1)
 
 dns_query_timeout_in_seconds = 1
-dns_servers_blank = {
-  'CenturyLink'         : {
-    '205.171.2.26'      : [],
-    '205.171.2.65'      : [],
-    '205.171.3.65'      : []
-  },
-  'Comodo Secure DNS'   : {
-    '8.26.56.26'        : [],
-    '8.20.247.20'       : []
-  },
-  'DNS Advantage'       : {
-    '156.154.70.1'      : [],
-    '156.154.71.1'      : []
-  },
-  'DNS.WATCH4'          : {
-    '84.200.70.40'      : []
-  },
-  'Dyn'                 : {
-    '216.146.35.35'     : [],
-    '216.146.36.36'     : []
-  },
-  'Google3'             : {
-    '8.8.8.8'           : [],
-    '8.8.4.4'           : []
-  },
-  'Hurricane Electric14' : {
-    '74.82.42.42'        : []
-  },
-  'Level31'             : {
-    '209.244.0.3'       : [],
-    '209.244.0.4'       : []
-  },
-  'Norton ConnectSafe6' : {
-    '199.85.126.10'     : [],
-    '199.85.127.10'     : []
-  },
-  'OpenDNS Home5'       : {
-    '208.67.222.222'    : [],
-    '208.67.220.220'    : []
-  },
-  'SafeDNS8'            : {
-    '195.46.39.39'      : [],
-    '195.46.39.40'      : []
-  },
-  'Verisign2'           : {
-    '64.6.64.6'         : [],
-    '64.6.65.6'         : []
-  },
-  'Yandex.DNS12'        : {
-    '77.88.8.8'         : [],
-    '77.88.8.1'         : []
-  }
-}
 
 def load_dns_data_structures(location):
   """
@@ -98,7 +45,9 @@ def load_dns_data_structures(location):
       return(json.load(fp))
   except:
     print("DNS JSON File does not exist, using default.")
-    return(dns_servers_blank)
+    filename = 'default_dns_list.json'
+    with open(filename, 'r') as fp:
+      return(json.load(fp))
 
 def store_dns_data_structures(dns_servers, location):
   """
