@@ -1,0 +1,7 @@
+#!/bin/bash
+
+while true
+do
+  python3 dnsLatency.py home
+  sleep 120
+done
