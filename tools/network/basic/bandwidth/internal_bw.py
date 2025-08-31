@@ -2,6 +2,7 @@ DEBUG_PRINT_STEP0 = False
 DEBUG_PRINT_STEP1 = False
 DEBUG_PRINT_STEP2 = False
 DEBUG_PRINT_STEP3 = True
+DEBUG_PRINT_ELAPSED = True
 
 ################################
 # Get the configuration
@@ -25,11 +26,16 @@ if DEBUG_PRINT_STEP0:
 # iPerf3 All Nodes
 ################################
 import subprocess, re
+import time
+
+# Code to be timed
+
 
 # Raw results are stored in a dictionary
 theseRawResults = dict()
 
 # For each node, simply get the output from iPerf3 with some minor filtering
+start_time = time.time()
 for thisNode in theseNodes:
   try:
     print("Capturing network segment bandwidth to node %s"%(thisNode))
@@ -42,6 +48,8 @@ for thisNode in theseNodes:
     theseRawResults[thisNode] = [re.sub(' +', ' ', x.strip()) for x in cmdResultByteArray]
   except:
     print("An error occured while transferring data with %s"%thisNode)
+end_time = time.time()
+elapsed_time = int(end_time - start_time)
 
 # DEBUG
 if DEBUG_PRINT_STEP1:
@@ -93,8 +101,10 @@ for thisNode, thisNodeList in theseNodeBWLists.items():
 # DEBUG
 if DEBUG_PRINT_STEP3:
   for thisNode, thisNodeDict in theseNodeMinMaxAvgLists.items():
-    print("The node %s has the points:"%(thisNode))
+    print("\nThe node %s has the points:"%(thisNode))
     print("Min: %s %s"%(thisNodeDict["min"], thisNodeDict["unit"]))
     print("Max: %s %s"%(thisNodeDict["max"], thisNodeDict["unit"]))
     print("Avg: %s %s"%(thisNodeDict["avg"], thisNodeDict["unit"]))
 
+if DEBUG_PRINT_ELAPSED:
+  print("\nElapsed time: %s seconds"%(elapsed_time))
