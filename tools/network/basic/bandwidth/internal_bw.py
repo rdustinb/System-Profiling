@@ -1,7 +1,7 @@
 DEBUG_PRINT_STEP0 = False
 DEBUG_PRINT_STEP1 = False
-DEBUG_PRINT_STEP2 = True
-DEBUG_PRINT_STEP3 = False
+DEBUG_PRINT_STEP2 = False
+DEBUG_PRINT_STEP3 = True
 
 ################################
 # Get the configuration
@@ -58,14 +58,43 @@ theseNodeBWLists = dict()
 
 for thisNode, theseNodeValues in theseRawResults.items():
   thisBWList = list()
+  thisUnit = ""
   # Pull out only the BW value
   for thisNodeValue in theseNodeValues:
     thisBWList.append(thisNodeValue.split()[6])
+    thisUnit = thisNodeValue.split()[7]
   # Put the list under the dict key, strip out the last two values since they are average values
-  theseNodeBWLists[thisNode] = thisBWList[:-2]
+  theseNodeBWLists[thisNode] = ([float(x) for x in thisBWList[:-2]], thisUnit)
 
 # DEBUG
 if DEBUG_PRINT_STEP2:
   for thisNode, theseNodeValues in theseNodeBWLists.items():
     print("The node %s has the BW sample points:"%(thisNode))
     print(theseNodeValues)
+
+################################
+# Determine Min/AVG/Max values
+################################
+
+theseNodeMinMaxAvgLists = dict()
+
+for thisNode, thisNodeList in theseNodeBWLists.items():
+  thisMin =  min(thisNodeList[0])
+  thisMax = max(thisNodeList[0])
+  thisAvg = sum(thisNodeList[0])/len(thisNodeList[0])
+  theseNodeMinMaxAvgLists[thisNode] = {
+    "min": thisMin, 
+    "max": thisMax, 
+    "avg": thisAvg, 
+    "unit": thisNodeList[1], 
+    "raw": thisNodeList
+  }
+
+# DEBUG
+if DEBUG_PRINT_STEP3:
+  for thisNode, thisNodeDict in theseNodeMinMaxAvgLists.items():
+    print("The node %s has the points:"%(thisNode))
+    print("Min: %s %s"%(thisNodeDict["min"], thisNodeDict["unit"]))
+    print("Max: %s %s"%(thisNodeDict["max"], thisNodeDict["unit"]))
+    print("Avg: %s %s"%(thisNodeDict["avg"], thisNodeDict["unit"]))
+
