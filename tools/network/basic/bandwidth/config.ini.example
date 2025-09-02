@@ -1,3 +1,7 @@
 [main]
 # Use space-separated FQDN of all nodes desired to check
 nodes=node0 node1 node2 node3
+# Specify if the nodes should be accessed:
+# True = Concurrently
+# False = Sequentially
+threaded=True

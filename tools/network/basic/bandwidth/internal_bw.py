@@ -4,7 +4,6 @@ DEBUG_PRINT_STEP2 = False
 DEBUG_PRINT_STEP3 = True
 DEBUG_PRINT_ELAPSED = True
 
-THREADED = True
 
 ################################
 # Get the configuration
@@ -18,7 +17,8 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 # Access values from the configuration file
-theseNodes = config.get('main', 'nodes').split()
+theseNodes  = config.get('main', 'nodes').split()
+THREADED    = config.getboolean('main', 'threaded')
 
 # DEBUG
 if DEBUG_PRINT_STEP0:
