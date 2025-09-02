@@ -4,6 +4,8 @@ DEBUG_PRINT_STEP2 = False
 DEBUG_PRINT_STEP3 = True
 DEBUG_PRINT_ELAPSED = True
 
+THREADED = True
+
 ################################
 # Get the configuration
 ################################
@@ -25,29 +27,35 @@ if DEBUG_PRINT_STEP0:
 ################################
 # iPerf3 All Nodes
 ################################
-import subprocess, re
-import time
+import time, threading
+from support import funcs
 
-# Code to be timed
-
+# For each node, simply get the output from iPerf3 with some minor filtering
+start_time = time.time()
 
 # Raw results are stored in a dictionary
 theseRawResults = dict()
 
-# For each node, simply get the output from iPerf3 with some minor filtering
-start_time = time.time()
-for thisNode in theseNodes:
-  try:
-    print("Capturing network segment bandwidth to node %s"%(thisNode))
-    cmdResultByteArray = subprocess.check_output(
-      "iperf3 -f m -c %s | grep \"sec\""%thisNode,
-      shell = True,
-      executable = "/bin/bash",
-      stderr = subprocess.STDOUT
-    ).decode('utf-8').splitlines()
-    theseRawResults[thisNode] = [re.sub(' +', ' ', x.strip()) for x in cmdResultByteArray]
-  except:
-    print("An error occured while transferring data with %s"%thisNode)
+# Branch if threading is enabled (this doesn't currently work because of how iperf3 works)
+if THREADED:
+
+  theseThreads = list()
+  
+  # Start all the threads
+  for thisNode in theseNodes:
+    thisThread = threading.Thread(target=funcs.callIperf3, args=(thisNode,theseRawResults,))
+    theseThreads.append(thisThread)
+    thisThread.start()
+  
+  # Wait for all the threads to complete...
+  for thisThread in theseThreads:
+    thisThread.join()
+
+else:
+
+  for thisNode in theseNodes:
+    funcs.callIperf3(thisNode,theseRawResults)
+
 end_time = time.time()
 elapsed_time = int(end_time - start_time)
 
@@ -89,7 +97,7 @@ theseNodeMinMaxAvgLists = dict()
 for thisNode, thisNodeList in theseNodeBWLists.items():
   thisMin =  min(thisNodeList[0])
   thisMax = max(thisNodeList[0])
-  thisAvg = sum(thisNodeList[0])/len(thisNodeList[0])
+  thisAvg = float("%.1f"%(sum(thisNodeList[0])/len(thisNodeList[0])))
   theseNodeMinMaxAvgLists[thisNode] = {
     "min": thisMin, 
     "max": thisMax, 
@@ -100,11 +108,21 @@ for thisNode, thisNodeList in theseNodeBWLists.items():
 
 # DEBUG
 if DEBUG_PRINT_STEP3:
+  thisCumulativeBW = 0.0
+  thisCumulativeUnit = ""
+
   for thisNode, thisNodeDict in theseNodeMinMaxAvgLists.items():
     print("\nThe node %s has the points:"%(thisNode))
     print("Min: %s %s"%(thisNodeDict["min"], thisNodeDict["unit"]))
     print("Max: %s %s"%(thisNodeDict["max"], thisNodeDict["unit"]))
     print("Avg: %s %s"%(thisNodeDict["avg"], thisNodeDict["unit"]))
+    thisCumulativeBW += thisNodeDict["avg"]
+    thisCumulativeUnit = thisNodeDict["unit"]
+
+  thisCumulativeBW = float("%.1f"%(thisCumulativeBW))
+  if THREADED:
+    print("\nCumulative Average Bandwidth:")
+    print("%s %s"%(thisCumulativeBW, thisCumulativeUnit))
 
 if DEBUG_PRINT_ELAPSED:
   print("\nElapsed time: %s seconds"%(elapsed_time))
