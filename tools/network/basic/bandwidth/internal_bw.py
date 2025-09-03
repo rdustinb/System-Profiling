@@ -1,9 +1,7 @@
 DEBUG_PRINT_STEP0 = False
 DEBUG_PRINT_STEP1 = False
 DEBUG_PRINT_STEP2 = False
-DEBUG_PRINT_STEP3 = True
 DEBUG_PRINT_ELAPSED = True
-
 
 ################################
 # Get the configuration
@@ -19,6 +17,7 @@ config.read('config.ini')
 # Access values from the configuration file
 theseNodes  = config.get('main', 'nodes').split()
 THREADED    = config.getboolean('main', 'threaded')
+archive     = config.get('main', 'archive')
 
 # DEBUG
 if DEBUG_PRINT_STEP0:
@@ -99,15 +98,56 @@ for thisNode, thisNodeList in theseNodeBWLists.items():
   thisMax = max(thisNodeList[0])
   thisAvg = float("%.1f"%(sum(thisNodeList[0])/len(thisNodeList[0])))
   theseNodeMinMaxAvgLists[thisNode] = {
-    "min": thisMin, 
-    "max": thisMax, 
-    "avg": thisAvg, 
-    "unit": thisNodeList[1], 
-    "raw": thisNodeList
+    "min": [thisMin], 
+    "max": [thisMax], 
+    "avg": [thisAvg], 
+    "unit": thisNodeList[1]
   }
 
-# DEBUG
-if DEBUG_PRINT_STEP3:
+################################
+# Output
+################################
+if archive == "JSON":
+
+  import json
+
+  thisArchiveFile = "archive.%s"%(archive.lower())
+  thisArchiveFileContent_new = dict()
+
+  ########
+  # Read the data
+  try:
+
+    # If the file doesn't already exist, this will fail and the except clause will be taken
+    with open(thisArchiveFile, "r") as fh_read:
+      thisArchiveFileContent_orig = json.load(fh_read)
+
+    ########
+    # Modify the data
+    for thisNode, thisNodeDict in theseNodeMinMaxAvgLists.items():
+      # Create the new dictionary entry for the node
+      thisArchiveFileContent_new[thisNode] = theseNodeMinMaxAvgLists[thisNode]
+      # Check if there is already data for this node from the archive file...
+      if(thisNode in thisArchiveFileContent_orig):
+        thisArchiveFileContent_new[thisNode]["min"] += thisArchiveFileContent_orig[thisNode]["min"]
+        thisArchiveFileContent_new[thisNode]["max"] += thisArchiveFileContent_orig[thisNode]["max"]
+        thisArchiveFileContent_new[thisNode]["avg"] += thisArchiveFileContent_orig[thisNode]["avg"]
+  
+  except:
+    print("Archive doesn't exist, creating empty data structure...")
+    thisArchiveFileContent_new = theseNodeMinMaxAvgLists
+    print(thisArchiveFileContent_new)
+
+  ########
+  # Store the data
+  try:
+    with open(thisArchiveFile, "w") as fh_write:
+      json.dump(thisArchiveFileContent_new, fh_write)
+
+  except:
+    print("Something went wrong storing the data.")
+
+else:
   thisCumulativeBW = 0.0
   thisCumulativeUnit = ""
 
@@ -116,7 +156,7 @@ if DEBUG_PRINT_STEP3:
     print("Min: %s %s"%(thisNodeDict["min"], thisNodeDict["unit"]))
     print("Max: %s %s"%(thisNodeDict["max"], thisNodeDict["unit"]))
     print("Avg: %s %s"%(thisNodeDict["avg"], thisNodeDict["unit"]))
-    thisCumulativeBW += thisNodeDict["avg"]
+    thisCumulativeBW += thisNodeDict["avg"][0]
     thisCumulativeUnit = thisNodeDict["unit"]
 
   thisCumulativeBW = float("%.1f"%(thisCumulativeBW))

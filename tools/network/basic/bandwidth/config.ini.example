@@ -5,3 +5,8 @@ nodes=node0 node1 node2 node3
 # True = Concurrently
 # False = Sequentially
 threaded=True
+# The method of reporting the information
+# None = Print results to terminal
+# CSV = Read in current CSV file, append new results, write out to CSV file
+# JSON = Read in current JSON file, append new results, write out to JSON file
+archive=JSON
