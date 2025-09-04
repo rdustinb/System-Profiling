@@ -90,6 +90,9 @@ if DEBUG_PRINT_STEP2:
 ################################
 # Determine Min/AVG/Max values
 ################################
+from datetime import datetime, timezone
+
+local_time = datetime.now(timezone.utc).astimezone()
 
 theseNodeMinMaxAvgLists = dict()
 
@@ -101,6 +104,7 @@ for thisNode, thisNodeList in theseNodeBWLists.items():
     "min": [thisMin], 
     "max": [thisMax], 
     "avg": [thisAvg], 
+    "time": [local_time.isoformat()],
     "unit": thisNodeList[1]
   }
 
@@ -109,7 +113,7 @@ for thisNode, thisNodeList in theseNodeBWLists.items():
 ################################
 if archive == "JSON":
 
-  import json
+  import json, copy
 
   thisArchiveFile = "archive.%s"%(archive.lower())
   thisArchiveFileContent_new = dict()
@@ -122,21 +126,27 @@ if archive == "JSON":
     with open(thisArchiveFile, "r") as fh_read:
       thisArchiveFileContent_orig = json.load(fh_read)
 
+    # Make a working copy of the new data dictionary
+    # Deepcopy is needed, otherwise the new variable name still points to the original dictionary memory location and
+    # the mutations below could cause disjointed datasets.
+    thisArchiveFileContent_new = copy.deepcopy(theseNodeMinMaxAvgLists)
+
     ########
     # Modify the data
     for thisNode, thisNodeDict in theseNodeMinMaxAvgLists.items():
-      # Create the new dictionary entry for the node
-      thisArchiveFileContent_new[thisNode] = theseNodeMinMaxAvgLists[thisNode]
-      # Check if there is already data for this node from the archive file...
+      # If the current node is already stored in the archive file, just append to it.
       if(thisNode in thisArchiveFileContent_orig):
+        # If any new fields are added to the new dataset, it will fail here. This will cause the except clause to be
+        # taken and the entire archive file overwritten with the new data.
         thisArchiveFileContent_new[thisNode]["min"] += thisArchiveFileContent_orig[thisNode]["min"]
         thisArchiveFileContent_new[thisNode]["max"] += thisArchiveFileContent_orig[thisNode]["max"]
         thisArchiveFileContent_new[thisNode]["avg"] += thisArchiveFileContent_orig[thisNode]["avg"]
+        thisArchiveFileContent_new[thisNode]["time"] += thisArchiveFileContent_orig[thisNode]["time"]
   
   except:
     print("Archive doesn't exist, creating empty data structure...")
-    thisArchiveFileContent_new = theseNodeMinMaxAvgLists
-    print(thisArchiveFileContent_new)
+    # Re-copy the new dataset if anything went wrong trying to merge the archive and the new data...
+    thisArchiveFileContent_new = copy.deepcopy(theseNodeMinMaxAvgLists)
 
   ########
   # Store the data
